@@ -124,8 +124,8 @@ def check_achievements(username: str, speed: float, wrong_words: int, is_challen
             if total_tests >= 5:
                 save_achievement(username, "consistent_typist")
 
-def calculate_wpm_and_errors(user_input: str, target_sentence: str, duration: float) -> tuple[float, int, str]:
-    """Calculate WPM, wrong words, and incorrect words using better matching."""
+def calculate_wpm_and_errors(user_input: str, target_sentence: str, duration: float) -> tuple[float, int, str, float]:
+    """Calculate WPM, wrong words, incorrect words, and accuracy using better matching."""
     user_words = user_input.lower().split()
     target_words = target_sentence.lower().split()
 
@@ -138,10 +138,12 @@ def calculate_wpm_and_errors(user_input: str, target_sentence: str, duration: fl
 
     incorrect_words = ' '.join(set(target_words) - set(user_words)) or 'None'
 
+    accuracy = (correct_words / total_words) * 100 if total_words > 0 else 0
+
     effective_words = max(0, len(user_words) - wrong_words)
     wpm = (effective_words / (duration / 60)) if duration > 0 else 0
     
-    return wpm, wrong_words, incorrect_words
+    return wpm, wrong_words, incorrect_words, accuracy
 
 def typing_test():
     username = input("Enter your username: ").strip()
@@ -175,13 +177,13 @@ def typing_test():
         end = time.time()
         duration = end - start
         
-        wpm, wrong_words, incorrect_words = calculate_wpm_and_errors(user_input, sentences[i], duration)
+        wpm, wrong_words, incorrect_words, accuracy = calculate_wpm_and_errors(user_input, sentences[i], duration)
         save_result(username, wpm, duration, wrong_words)
         
         total_speed += wpm
         total_wrong += wrong_words
         
-        print(f"Speed: {wpm:.2f} WPM | Time: {duration:.2f}s | Mistakes: {wrong_words} ({incorrect_words})")
+        print(f"Your WPM is {wpm:.2f} with accuracy {accuracy:.2f}%")
 
     avg_speed = total_speed / attempts
     print(f"\nAverage Speed: {avg_speed:.2f} WPM")
@@ -226,10 +228,10 @@ def typing_challenge():
         print(f"Time's up! You took {total_time:.2f}s (limit: {time_limit}s). No score saved.")
         return
     
-    wpm, wrong_words, incorrect_words = calculate_wpm_and_errors(user_input, sentence, total_time)
+    wpm, wrong_words, incorrect_words, accuracy = calculate_wpm_and_errors(user_input, sentence, total_time)
     save_result(username, wpm, total_time, wrong_words)
     
-    print(f"Speed: {wpm:.2f} WPM | Time: {total_time:.2f}s | Mistakes: {wrong_words} ({incorrect_words})")
+    print(f"Your WPM is {wpm:.2f} with accuracy {accuracy:.2f}%")
     
     check_achievements(username, wpm, wrong_words, is_challenge=True)
 
